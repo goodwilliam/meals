@@ -117,6 +117,17 @@
       line-height: 1.4;
     }
 
+    /* ── Loading ── */
+    .loading-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 30px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+
     /* ── Grocery section ── */
     .grocery-wrap {
       margin: 12px 12px 0;
@@ -205,6 +216,15 @@
       background: var(--green);
       color: white;
     }
+    .btn-danger {
+      background: var(--red-bg);
+      color: var(--red-text);
+      border: 1.5px solid #fca5a5;
+    }
+    .btn-danger-solid {
+      background: #b91c1c;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -214,7 +234,9 @@
   <p id="week-label"></p>
 </header>
 
-<div class="cards" id="cards"></div>
+<div class="cards" id="cards">
+  <div class="loading-card">Loading meals...</div>
+</div>
 <div class="grocery-wrap" id="grocery-wrap">
   <div class="grocery-header">
     <span>🛒 Grocery List</span>
@@ -223,16 +245,28 @@
   <div class="grocery-body" id="grocery-body"></div>
 </div>
 
-<div class="bottom-bar">
-  <button class="btn btn-outline" onclick="rerollAll()">🎲 Reroll All</button>
+<div class="bottom-bar" id="bottom-bar">
+  <button class="btn btn-outline" onclick="askRerollAll()">🎲 Reroll All</button>
   <button class="btn btn-solid"   onclick="toggleGrocery()">🛒 Grocery List</button>
 </div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-// DATA
+// TheMealDB — category metadata (starches + grocery items per category)
 // ─────────────────────────────────────────────────────────────────────────────
-const PROTEINS = [
+const CATEGORY_META = {
+  Beef:       { starches: ["White rice", "Roasted potatoes", "Mashed potatoes"], items: { Proteins: ["beef"] } },
+  Chicken:    { starches: ["White rice", "Roasted potatoes"],                    items: { Proteins: ["chicken"] } },
+  Seafood:    { starches: ["White rice", "Pasta"],                               items: { Proteins: ["fish / seafood"] } },
+  Lamb:       { starches: ["White rice", "Roasted potatoes"],                    items: { Proteins: ["lamb"] } },
+  Pork:       { starches: ["White rice", "Roasted potatoes", "Mashed potatoes"], items: { Proteins: ["pork"] } },
+  Vegetarian: { starches: ["White rice", "Roasted potatoes"],                    items: { Proteins: ["chickpeas / tofu / eggs"] } },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FALLBACK DATA (used if API is unreachable)
+// ─────────────────────────────────────────────────────────────────────────────
+const PROTEINS_FALLBACK = [
   {
     name: "Baked chicken thighs",
     starches: ["White rice", "Roasted potatoes"],
@@ -339,6 +373,7 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 // ─────────────────────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────────────────────
+let PROTEINS = PROTEINS_FALLBACK;
 let plan = [];
 
 function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -351,10 +386,35 @@ function makeMeal() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TheMealDB FETCH
+// ─────────────────────────────────────────────────────────────────────────────
+async function fetchMealPool() {
+  try {
+    const categories = Object.keys(CATEGORY_META);
+    const results = await Promise.all(
+      categories.map(cat =>
+        fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${cat}`)
+          .then(r => r.json())
+          .then(d => (d.meals || []).map(m => ({
+            name: m.strMeal,
+            starches: CATEGORY_META[cat].starches,
+            note: `Search "${m.strMeal}" on YouTube for a quick video.`,
+            items: CATEGORY_META[cat].items,
+          })))
+          .catch(() => [])
+      )
+    );
+    const all = results.flat();
+    if (all.length > 0) PROTEINS = all;
+  } catch (_) {
+    // keep PROTEINS_FALLBACK
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // RENDER
 // ─────────────────────────────────────────────────────────────────────────────
 function render() {
-  // Week label
   const d = new Date();
   document.getElementById('week-label').textContent =
     'Week of ' + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -396,16 +456,41 @@ function render() {
 // ─────────────────────────────────────────────────────────────────────────────
 // ACTIONS
 // ─────────────────────────────────────────────────────────────────────────────
-function rerollAll() {
+let rerollConfirmTimeout = null;
+
+function askRerollAll() {
+  clearTimeout(rerollConfirmTimeout);
+  const bar = document.getElementById('bottom-bar');
+  bar.innerHTML = `
+    <button class="btn btn-danger"       onclick="cancelRerollAll()">✕ Cancel</button>
+    <button class="btn btn-danger-solid" onclick="doRerollAll()">Reset all meals?</button>
+  `;
+  rerollConfirmTimeout = setTimeout(cancelRerollAll, 4000);
+}
+
+function cancelRerollAll() {
+  clearTimeout(rerollConfirmTimeout);
+  restoreBottomBar();
+}
+
+function doRerollAll() {
+  clearTimeout(rerollConfirmTimeout);
+  restoreBottomBar();
   plan = DAYS.map(() => makeMeal());
   render();
   closeGrocery();
 }
 
+function restoreBottomBar() {
+  document.getElementById('bottom-bar').innerHTML = `
+    <button class="btn btn-outline" onclick="askRerollAll()">🎲 Reroll All</button>
+    <button class="btn btn-solid"   onclick="toggleGrocery()">🛒 Grocery List</button>
+  `;
+}
+
 function rerollDay(i) {
   plan[i] = makeMeal();
   render();
-  // animate the card
   setTimeout(() => {
     const card = document.getElementById(`card-${i}`);
     if (card) { card.classList.add('rolling'); setTimeout(() => card.classList.remove('rolling'), 300); }
@@ -434,16 +519,12 @@ function buildGrocery() {
   const lists = { Proteins: new Set(), Produce: new Set(), Pantry: new Set(), Dairy: new Set() };
 
   plan.forEach(meal => {
-    // protein items
     Object.entries(meal.protein.items).forEach(([cat, items]) => items.forEach(i => lists[cat]?.add(i)));
-    // starch items
     const starchItems = STARCH_ITEMS[meal.starch] || {};
     Object.entries(starchItems).forEach(([cat, items]) => items.forEach(i => lists[cat]?.add(i)));
-    // veggie items
     Object.entries(meal.veggie.items).forEach(([cat, items]) => items.forEach(i => lists[cat]?.add(i)));
   });
 
-  // shared pantry basics (always add)
   lists.Pantry.add('olive oil');
   lists.Pantry.add('salt');
   lists.Pantry.add('pepper');
@@ -480,13 +561,13 @@ function clearChecks() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PERSISTENCE  (saves plan to localStorage so it survives page reloads)
+// PERSISTENCE
 // ─────────────────────────────────────────────────────────────────────────────
 function save() {
   const data = plan.map(m => ({
-    pName: m.protein.name,
+    protein: { name: m.protein.name, starches: m.protein.starches, note: m.protein.note, items: m.protein.items },
     starch: m.starch,
-    vName: m.veggie.name,
+    veggie: { name: m.veggie.name, items: m.veggie.items },
   }));
   localStorage.setItem('mealPlan', JSON.stringify({ date: new Date().toDateString(), data }));
 }
@@ -496,13 +577,8 @@ function load() {
     const raw = localStorage.getItem('mealPlan');
     if (!raw) return false;
     const { date, data } = JSON.parse(raw);
-    // Only restore if saved today
     if (date !== new Date().toDateString()) return false;
-    plan = data.map(d => ({
-      protein: PROTEINS.find(p => p.name === d.pName) || rand(PROTEINS),
-      starch:  d.starch,
-      veggie:  VEGGIES.find(v => v.name === d.vName) || rand(VEGGIES),
-    }));
+    plan = data.map(d => ({ protein: d.protein, starch: d.starch, veggie: d.veggie }));
     return true;
   } catch { return false; }
 }
@@ -510,8 +586,11 @@ function load() {
 // ─────────────────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────────────────
-if (!load()) { plan = DAYS.map(() => makeMeal()); }
-render();
+(async () => {
+  await fetchMealPool();
+  if (!load()) { plan = DAYS.map(() => makeMeal()); }
+  render();
+})();
 </script>
 </body>
 </html>
