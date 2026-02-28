@@ -578,6 +578,7 @@ function load() {
     if (!raw) return false;
     const { date, data } = JSON.parse(raw);
     if (date !== new Date().toDateString()) return false;
+    if (!data[0]?.protein?.name) return false; // discard old-format saves
     plan = data.map(d => ({ protein: d.protein, starch: d.starch, veggie: d.veggie }));
     return true;
   } catch { return false; }
