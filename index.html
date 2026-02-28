@@ -47,7 +47,6 @@
       border-radius: 14px;
       padding: 14px 14px 12px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-      transition: transform 0.15s;
     }
     .card.rolling { animation: pop 0.25s ease; }
     @keyframes pop {
@@ -67,6 +66,8 @@
       font-size: 1rem;
       color: var(--green);
     }
+    .card-actions { display: flex; align-items: center; gap: 6px; }
+
     .reroll-btn {
       background: var(--green-light);
       color: var(--green);
@@ -79,9 +80,21 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      transition: background 0.15s;
     }
     .reroll-btn:active { background: #b7e4c7; }
+
+    .fav-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 2px 4px;
+      line-height: 1;
+      opacity: 0.4;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .fav-btn.active { opacity: 1; }
+    .fav-btn:active { transform: scale(1.3); }
 
     .meal-rows { display: flex; flex-direction: column; gap: 7px; }
 
@@ -114,8 +127,29 @@
       border-top: 1px solid var(--border);
       font-size: 0.78rem;
       color: var(--muted);
-      line-height: 1.4;
+      line-height: 1.5;
     }
+    .recipe-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 5px;
+    }
+    .recipe-links:only-child { margin-bottom: 0; }
+    .recipe-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--bg);
+      color: var(--green);
+      border: 1px solid var(--green-mid);
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .recipe-link:active { opacity: 0.7; }
 
     /* ── Loading ── */
     .loading-card {
@@ -126,6 +160,62 @@
       color: var(--muted);
       font-size: 0.9rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+
+    /* ── Favorites section ── */
+    .fav-section {
+      margin: 12px 12px 0;
+      background: var(--card);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      display: none;
+    }
+    .fav-section.open { display: block; }
+    .fav-header {
+      background: #7f1d1d;
+      color: white;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .fav-clear {
+      font-size: 0.78rem;
+      opacity: 0.8;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.5);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .fav-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .fav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .fav-item:last-child { border-bottom: none; }
+    .fav-item-name { flex: 1; }
+    .fav-remove {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      opacity: 0.5;
+      padding: 2px 6px;
+    }
+    .fav-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 16px 0;
     }
 
     /* ── Grocery section ── */
@@ -216,15 +306,13 @@
       background: var(--green);
       color: white;
     }
-    .btn-danger {
-      background: var(--red-bg);
-      color: var(--red-text);
+    .btn-fav {
+      background: #fff1f2;
+      color: #b91c1c;
       border: 1.5px solid #fca5a5;
     }
-    .btn-danger-solid {
-      background: #b91c1c;
-      color: white;
-    }
+    .btn-danger       { background: var(--red-bg); color: var(--red-text); border: 1.5px solid #fca5a5; }
+    .btn-danger-solid { background: #b91c1c; color: white; border: none; }
   </style>
 </head>
 <body>
@@ -237,6 +325,15 @@
 <div class="cards" id="cards">
   <div class="loading-card">Loading meals...</div>
 </div>
+
+<div class="fav-section" id="fav-section">
+  <div class="fav-header">
+    <span>❤️ Saved Favorites</span>
+    <button class="fav-clear" onclick="clearAllFavs()">Clear all</button>
+  </div>
+  <div class="fav-body" id="fav-body"></div>
+</div>
+
 <div class="grocery-wrap" id="grocery-wrap">
   <div class="grocery-header">
     <span>🛒 Grocery List</span>
@@ -247,12 +344,13 @@
 
 <div class="bottom-bar" id="bottom-bar">
   <button class="btn btn-outline" onclick="askRerollAll()">🎲 Reroll All</button>
-  <button class="btn btn-solid"   onclick="toggleGrocery()">🛒 Grocery List</button>
+  <button class="btn btn-fav"     onclick="toggleFavSection()">❤️ Favs</button>
+  <button class="btn btn-solid"   onclick="toggleGrocery()">🛒 List</button>
 </div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-// TheMealDB — category metadata (starches + grocery items per category)
+// TheMealDB category metadata
 // ─────────────────────────────────────────────────────────────────────────────
 const CATEGORY_META = {
   Beef:       { starches: ["White rice", "Roasted potatoes", "Mashed potatoes"], items: { Proteins: ["beef"] } },
@@ -264,87 +362,21 @@ const CATEGORY_META = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FALLBACK DATA (used if API is unreachable)
+// FALLBACK DATA
 // ─────────────────────────────────────────────────────────────────────────────
 const PROTEINS_FALLBACK = [
-  {
-    name: "Baked chicken thighs",
-    starches: ["White rice", "Roasted potatoes"],
-    note: "Season with garlic powder, paprika, salt + olive oil. Bake 425°F for 35 min. Reheats great.",
-    items: { Proteins: ["chicken thighs"], Pantry: ["garlic powder", "paprika"], Produce: [] }
-  },
-  {
-    name: "Grilled / pan-seared chicken breast",
-    starches: ["White rice", "Roasted potatoes"],
-    note: "Season with salt, pepper, garlic. Pan sear 6–7 min per side on medium-high.",
-    items: { Proteins: ["chicken breast"], Pantry: ["olive oil"], Produce: ["garlic", "lemon"] }
-  },
-  {
-    name: "Steak",
-    starches: ["White rice", "Roasted potatoes", "Mashed potatoes"],
-    note: "Pat dry, season generously with salt + pepper. Pan sear 3–4 min/side. Rest 5 min, slice thin.",
-    items: { Proteins: ["steak (sirloin or ribeye)"], Pantry: ["butter", "salt", "pepper"], Produce: ["garlic"] }
-  },
-  {
-    name: "Salmon",
-    starches: ["White rice"],
-    note: "Brush with soy sauce + a little honey. Bake 400°F for 12–14 min. Easy and fast.",
-    items: { Proteins: ["salmon fillets"], Pantry: ["soy sauce", "honey"], Produce: ["garlic"] }
-  },
-  {
-    name: "Ground beef bowl",
-    starches: ["White rice"],
-    note: "Brown beef with diced onion + garlic. Season with cumin, salt, chili powder. Serve over rice.",
-    items: { Proteins: ["ground beef (1 lb)"], Pantry: ["cumin", "chili powder"], Produce: ["onion", "garlic"] }
-  },
-  {
-    name: "Lomo Saltado",
-    starches: ["White rice"],
-    note: "Stir fry beef strips with onion, tomato, soy sauce, oyster sauce over high heat. Serve over rice.",
-    items: { Proteins: ["beef strips (1 lb)"], Pantry: ["soy sauce", "oyster sauce"], Produce: ["onion", "tomato", "garlic"] }
-  },
-  {
-    name: "Shrimp",
-    starches: ["White rice", "Pasta"],
-    note: "Sauté in butter + garlic 2–3 min per side until pink. Squeeze lemon. Done.",
-    items: { Proteins: ["shrimp (1 lb)"], Pantry: ["butter", "olive oil"], Produce: ["garlic", "lemon"] }
-  },
-  {
-    name: "Roasted chickpeas",
-    starches: ["White rice"],
-    note: "Drain chickpeas, toss with olive oil + cumin + paprika. Roast 400°F 25 min. Drizzle tahini.",
-    items: { Proteins: ["canned chickpeas (2 cans)"], Pantry: ["olive oil", "cumin", "paprika", "tahini"], Produce: [] }
-  },
-  {
-    name: "Pork chops",
-    starches: ["White rice", "Mashed potatoes", "Roasted potatoes"],
-    note: "Season, pan sear 4–5 min per side. Let rest before cutting.",
-    items: { Proteins: ["pork chops"], Pantry: ["garlic powder", "paprika", "olive oil"], Produce: [] }
-  },
-  {
-    name: "Meat sauce pasta",
-    starches: ["Pasta"],
-    note: "Brown ground beef + garlic, add marinara, simmer 20 min. Make a big batch — great leftovers.",
-    items: { Proteins: ["ground beef (1 lb)"], Pantry: ["jarred marinara", "pasta (1 box)"], Produce: ["garlic", "onion"] }
-  },
-  {
-    name: "Rotisserie chicken",
-    starches: ["White rice", "Roasted potatoes", "Mashed potatoes"],
-    note: "Just pick one up on the way home. Zero cooking. Pull the meat and serve.",
-    items: { Proteins: ["rotisserie chicken (store-bought)"], Pantry: [], Produce: [] }
-  },
-  {
-    name: "Chicken tacos",
-    starches: ["White rice"],
-    note: "Simmer chicken thighs with cumin + garlic broth 25 min, shred with two forks. Serve with tortillas.",
-    items: { Proteins: ["chicken thighs"], Pantry: ["cumin", "chili powder", "flour tortillas", "chicken broth"], Produce: ["garlic", "lime"] }
-  },
-  {
-    name: "Ground beef tacos",
-    starches: ["White rice"],
-    note: "Cook ground beef with taco seasoning. Serve in tortillas. Keep it simple.",
-    items: { Proteins: ["ground beef (1 lb)"], Pantry: ["taco seasoning", "flour tortillas", "jarred salsa"], Produce: ["lime"] }
-  },
+  { name: "Baked chicken thighs", starches: ["White rice", "Roasted potatoes"], note: "Season with garlic powder, paprika, salt + olive oil. Bake 425°F for 35 min.", items: { Proteins: ["chicken thighs"], Pantry: ["garlic powder", "paprika"], Produce: [] } },
+  { name: "Pan-seared chicken breast", starches: ["White rice", "Roasted potatoes"], note: "Season with salt, pepper, garlic. Pan sear 6–7 min per side on medium-high.", items: { Proteins: ["chicken breast"], Pantry: ["olive oil"], Produce: ["garlic", "lemon"] } },
+  { name: "Steak", starches: ["White rice", "Roasted potatoes", "Mashed potatoes"], note: "Pat dry, season generously with salt + pepper. Pan sear 3–4 min/side. Rest 5 min.", items: { Proteins: ["steak (sirloin or ribeye)"], Pantry: ["butter"], Produce: ["garlic"] } },
+  { name: "Salmon", starches: ["White rice"], note: "Brush with soy sauce + honey. Bake 400°F for 12–14 min.", items: { Proteins: ["salmon fillets"], Pantry: ["soy sauce", "honey"], Produce: ["garlic"] } },
+  { name: "Ground beef bowl", starches: ["White rice"], note: "Brown beef with diced onion + garlic. Season with cumin, salt, chili powder.", items: { Proteins: ["ground beef (1 lb)"], Pantry: ["cumin", "chili powder"], Produce: ["onion", "garlic"] } },
+  { name: "Lomo Saltado", starches: ["White rice"], note: "Stir fry beef strips with onion, tomato, soy + oyster sauce over high heat.", items: { Proteins: ["beef strips (1 lb)"], Pantry: ["soy sauce", "oyster sauce"], Produce: ["onion", "tomato", "garlic"] } },
+  { name: "Garlic butter shrimp", starches: ["White rice", "Pasta"], note: "Sauté in butter + garlic 2–3 min per side until pink. Squeeze lemon.", items: { Proteins: ["shrimp (1 lb)"], Pantry: ["butter"], Produce: ["garlic", "lemon"] } },
+  { name: "Pork chops", starches: ["White rice", "Mashed potatoes", "Roasted potatoes"], note: "Season, pan sear 4–5 min per side. Let rest before cutting.", items: { Proteins: ["pork chops"], Pantry: ["garlic powder", "paprika"], Produce: [] } },
+  { name: "Meat sauce pasta", starches: ["Pasta"], note: "Brown ground beef + garlic, add marinara, simmer 20 min. Great leftovers.", items: { Proteins: ["ground beef (1 lb)"], Pantry: ["jarred marinara", "pasta (1 box)"], Produce: ["garlic", "onion"] } },
+  { name: "Rotisserie chicken", starches: ["White rice", "Roasted potatoes", "Mashed potatoes"], note: "Pick one up on the way home. Zero cooking. Pull the meat and serve.", items: { Proteins: ["rotisserie chicken (store-bought)"], Pantry: [], Produce: [] } },
+  { name: "Chicken tacos", starches: ["White rice"], note: "Simmer chicken thighs with cumin + garlic broth 25 min, shred, serve with tortillas.", items: { Proteins: ["chicken thighs"], Pantry: ["cumin", "chili powder", "flour tortillas", "chicken broth"], Produce: ["garlic", "lime"] } },
+  { name: "Ground beef tacos", starches: ["White rice"], note: "Cook ground beef with taco seasoning. Serve in tortillas.", items: { Proteins: ["ground beef (1 lb)"], Pantry: ["taco seasoning", "flour tortillas", "jarred salsa"], Produce: ["lime"] } },
 ];
 
 const VEGGIES = [
@@ -375,14 +407,39 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 // ─────────────────────────────────────────────────────────────────────────────
 let PROTEINS = PROTEINS_FALLBACK;
 let plan = [];
+let FAVORITES = new Set(); // set of protein names
 
-function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+// ─────────────────────────────────────────────────────────────────────────────
+// FAVORITES PERSISTENCE
+// ─────────────────────────────────────────────────────────────────────────────
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem('favorites');
+    if (raw) FAVORITES = new Set(JSON.parse(raw));
+  } catch (_) {}
+}
 
-function makeMeal() {
-  const protein = rand(PROTEINS);
-  const starch  = rand(protein.starches);
-  const veggie  = rand(VEGGIES);
-  return { protein, starch, veggie };
+function saveFavorites() {
+  localStorage.setItem('favorites', JSON.stringify([...FAVORITES]));
+}
+
+function toggleFavorite(i) {
+  const name = plan[i].protein.name;
+  if (FAVORITES.has(name)) {
+    FAVORITES.delete(name);
+  } else {
+    FAVORITES.add(name);
+  }
+  saveFavorites();
+  render();
+  if (document.getElementById('fav-section').classList.contains('open')) buildFavSection();
+}
+
+function clearAllFavs() {
+  FAVORITES.clear();
+  saveFavorites();
+  buildFavSection();
+  render();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -398,22 +455,28 @@ async function fetchMealPool() {
           .then(d => (d.meals || []).map(m => ({
             name: m.strMeal,
             starches: CATEGORY_META[cat].starches,
-            note: `Search "${m.strMeal}" on YouTube for a quick video.`,
+            note: '',
             items: CATEGORY_META[cat].items,
+            mealId: m.idMeal,
           })))
           .catch(() => [])
       )
     );
     const all = results.flat();
     if (all.length > 0) PROTEINS = all;
-  } catch (_) {
-    // keep PROTEINS_FALLBACK
-  }
+  } catch (_) {}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // RENDER
 // ─────────────────────────────────────────────────────────────────────────────
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function makeMeal() {
+  const protein = rand(PROTEINS);
+  return { protein, starch: rand(protein.starches), veggie: rand(VEGGIES) };
+}
+
 function render() {
   const d = new Date();
   document.getElementById('week-label').textContent =
@@ -423,13 +486,32 @@ function render() {
   container.innerHTML = '';
 
   plan.forEach((meal, i) => {
+    const isFav = FAVORITES.has(meal.protein.name);
+    const recipeUrl = meal.protein.mealId
+      ? `https://www.themealdb.com/meal/${meal.protein.mealId}`
+      : null;
+    const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(meal.protein.name + ' recipe')}`;
+
+    const linksHtml = `
+      <div class="recipe-links">
+        ${recipeUrl ? `<a href="${recipeUrl}" target="_blank" class="recipe-link">📖 Recipe</a>` : ''}
+        <a href="${ytUrl}" target="_blank" class="recipe-link">▶ YouTube</a>
+      </div>
+    `;
+    const noteHtml = meal.protein.note
+      ? `<div style="margin-top:4px">${meal.protein.note}</div>`
+      : '';
+
     const card = document.createElement('div');
     card.className = 'card';
     card.id = `card-${i}`;
     card.innerHTML = `
       <div class="card-header">
         <span class="day-name">${DAYS[i]}</span>
-        <button class="reroll-btn" onclick="rerollDay(${i})">🎲 Reroll</button>
+        <div class="card-actions">
+          <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(${i})" title="${isFav ? 'Remove favorite' : 'Save as favorite'}">❤️</button>
+          <button class="reroll-btn" onclick="rerollDay(${i})">🎲 Reroll</button>
+        </div>
       </div>
       <div class="meal-rows">
         <div class="meal-row">
@@ -445,7 +527,7 @@ function render() {
           <span class="meal-name">${meal.veggie.name}</span>
         </div>
       </div>
-      <div class="cook-note">${meal.protein.note}</div>
+      <div class="cook-note">${linksHtml}${noteHtml}</div>
     `;
     container.appendChild(card);
   });
@@ -460,8 +542,7 @@ let rerollConfirmTimeout = null;
 
 function askRerollAll() {
   clearTimeout(rerollConfirmTimeout);
-  const bar = document.getElementById('bottom-bar');
-  bar.innerHTML = `
+  document.getElementById('bottom-bar').innerHTML = `
     <button class="btn btn-danger"       onclick="cancelRerollAll()">✕ Cancel</button>
     <button class="btn btn-danger-solid" onclick="doRerollAll()">Reset all meals?</button>
   `;
@@ -484,7 +565,8 @@ function doRerollAll() {
 function restoreBottomBar() {
   document.getElementById('bottom-bar').innerHTML = `
     <button class="btn btn-outline" onclick="askRerollAll()">🎲 Reroll All</button>
-    <button class="btn btn-solid"   onclick="toggleGrocery()">🛒 Grocery List</button>
+    <button class="btn btn-fav"     onclick="toggleFavSection()">❤️ Favs</button>
+    <button class="btn btn-solid"   onclick="toggleGrocery()">🛒 List</button>
   `;
 }
 
@@ -495,11 +577,47 @@ function rerollDay(i) {
     const card = document.getElementById(`card-${i}`);
     if (card) { card.classList.add('rolling'); setTimeout(() => card.classList.remove('rolling'), 300); }
   }, 10);
-  if (document.getElementById('grocery-wrap').classList.contains('open')) {
-    buildGrocery();
+  if (document.getElementById('grocery-wrap').classList.contains('open')) buildGrocery();
+}
+
+// ── Favorites section ──
+function toggleFavSection() {
+  const el = document.getElementById('fav-section');
+  if (el.classList.contains('open')) {
+    el.classList.remove('open');
+  } else {
+    buildFavSection();
+    el.classList.add('open');
+    setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   }
 }
 
+function buildFavSection() {
+  const body = document.getElementById('fav-body');
+  if (FAVORITES.size === 0) {
+    body.innerHTML = '<div class="fav-empty">No favorites yet — tap ❤️ on a meal to save it.</div>';
+    return;
+  }
+  body.innerHTML = '';
+  [...FAVORITES].sort().forEach(name => {
+    const row = document.createElement('div');
+    row.className = 'fav-item';
+    row.innerHTML = `
+      <span class="fav-item-name">❤️ ${name}</span>
+      <button class="fav-remove" onclick="removeFav('${name.replace(/'/g, "\\'")}')">✕</button>
+    `;
+    body.appendChild(row);
+  });
+}
+
+function removeFav(name) {
+  FAVORITES.delete(name);
+  saveFavorites();
+  buildFavSection();
+  render();
+}
+
+// ── Grocery ──
 function toggleGrocery() {
   const wrap = document.getElementById('grocery-wrap');
   if (wrap.classList.contains('open')) {
@@ -537,18 +655,15 @@ function buildGrocery() {
   for (const [cat, label] of Object.entries(catLabels)) {
     const items = [...lists[cat]].filter(Boolean).sort();
     if (!items.length) continue;
-
     const div = document.createElement('div');
     div.className = 'g-category';
     div.innerHTML = `<h3>${label}</h3>`;
-
     items.forEach(item => {
       const row = document.createElement('label');
       row.className = 'g-item';
       row.innerHTML = `<input type="checkbox" onchange="this.closest('.g-item').classList.toggle('checked', this.checked)"><span>${item}</span>`;
       div.appendChild(row);
     });
-
     body.appendChild(div);
   }
 }
@@ -565,7 +680,7 @@ function clearChecks() {
 // ─────────────────────────────────────────────────────────────────────────────
 function save() {
   const data = plan.map(m => ({
-    protein: { name: m.protein.name, starches: m.protein.starches, note: m.protein.note, items: m.protein.items },
+    protein: { name: m.protein.name, starches: m.protein.starches, note: m.protein.note, items: m.protein.items, mealId: m.protein.mealId },
     starch: m.starch,
     veggie: { name: m.veggie.name, items: m.veggie.items },
   }));
@@ -578,7 +693,7 @@ function load() {
     if (!raw) return false;
     const { date, data } = JSON.parse(raw);
     if (date !== new Date().toDateString()) return false;
-    if (!data[0]?.protein?.name) return false; // discard old-format saves
+    if (!data[0]?.protein?.name) return false;
     plan = data.map(d => ({ protein: d.protein, starch: d.starch, veggie: d.veggie }));
     return true;
   } catch { return false; }
@@ -588,6 +703,7 @@ function load() {
 // INIT
 // ─────────────────────────────────────────────────────────────────────────────
 (async () => {
+  loadFavorites();
   await fetchMealPool();
   if (!load()) { plan = DAYS.map(() => makeMeal()); }
   render();
