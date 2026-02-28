@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Weekly Meals</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #2d6a4f;
+      --green-light:#d8f3dc;
+      --green-mid:  #52b788;
+      --bg:         #f0f4f1;
+      --card:       #ffffff;
+      --text:       #1a1a1a;
+      --muted:      #6b7280;
+      --border:     #e5e7eb;
+      --red-bg:     #fee2e2;   --red-text:   #b91c1c;
+      --yellow-bg:  #fef9c3;   --yellow-text:#854d0e;
+      --veggie-bg:  #dcfce7;   --veggie-text:#15803d;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 90px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--green);
+      color: white;
+      padding: 24px 16px 20px;
+      text-align: center;
+    }
+    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    header p  { font-size: 0.85rem; opacity: 0.75; margin-top: 4px; }
+
+    /* ── Cards ── */
+    .cards { padding: 14px 12px 0; display: flex; flex-direction: column; gap: 10px; }
+
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 14px 14px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+      transition: transform 0.15s;
+    }
+    .card.rolling { animation: pop 0.25s ease; }
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(0.97); }
+      100% { transform: scale(1); }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .day-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--green);
+    }
+    .reroll-btn {
+      background: var(--green-light);
+      color: var(--green);
+      border: none;
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s;
+    }
+    .reroll-btn:active { background: #b7e4c7; }
+
+    .meal-rows { display: flex; flex-direction: column; gap: 7px; }
+
+    .meal-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+    }
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 10px;
+      min-width: 54px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+    .tag-p { background: var(--red-bg);    color: var(--red-text); }
+    .tag-s { background: var(--yellow-bg); color: var(--yellow-text); }
+    .tag-v { background: var(--veggie-bg); color: var(--veggie-text); }
+
+    .meal-name { flex: 1; }
+
+    .cook-note {
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Grocery section ── */
+    .grocery-wrap {
+      margin: 12px 12px 0;
+      background: var(--card);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      display: none;
+    }
+    .grocery-wrap.open { display: block; }
+
+    .grocery-header {
+      background: var(--green);
+      color: white;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .clear-checks {
+      font-size: 0.78rem;
+      opacity: 0.8;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.5);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .grocery-body { padding: 14px 16px; }
+
+    .g-category { margin-bottom: 16px; }
+    .g-category:last-child { margin-bottom: 0; }
+    .g-category h3 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .g-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 0.92rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .g-item:last-child { border-bottom: none; }
+    .g-item.checked { opacity: 0.4; text-decoration: line-through; }
+    .g-item input { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; }
+
+    /* ── Bottom bar ── */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      flex: 1;
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-outline {
+      background: var(--bg);
+      color: var(--green);
+      border: 1.5px solid var(--green-mid);
+    }
+    .btn-solid {
+      background: var(--green);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🥦 Weekly Meals</h1>
+  <p id="week-label"></p>
+</header>
+
+<div class="cards" id="cards"></div>
+<div class="grocery-wrap" id="grocery-wrap">
+  <div class="grocery-header">
+    <span>🛒 Grocery List</span>
+    <button class="clear-checks" onclick="clearChecks()">Clear checks</button>
+  </div>
+  <div class="grocery-body" id="grocery-body"></div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn btn-outline" onclick="rerollAll()">🎲 Reroll All</button>
+  <button class="btn btn-solid"   onclick="toggleGrocery()">🛒 Grocery List</button>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────────────────────
+const PROTEINS = [
+  {
+    name: "Baked chicken thighs",
+    starches: ["White rice", "Roasted potatoes"],
+    note: "Season with garlic powder, paprika, salt + olive oil. Bake 425°F for 35 min. Reheats great.",
+    items: { Proteins: ["chicken thighs"], Pantry: ["garlic powder", "paprika"], Produce: [] }
+  },
+  {
+    name: "Grilled / pan-seared chicken breast",
+    starches: ["White rice", "Roasted potatoes"],
+    note: "Season with salt, pepper, garlic. Pan sear 6–7 min per side on medium-high.",
+    items: { Proteins: ["chicken breast"], Pantry: ["olive oil"], Produce: ["garlic", "lemon"] }
+  },
+  {
+    name: "Steak",
+    starches: ["White rice", "Roasted potatoes", "Mashed potatoes"],
+    note: "Pat dry, season generously with salt + pepper. Pan sear 3–4 min/side. Rest 5 min, slice thin.",
+    items: { Proteins: ["steak (sirloin or ribeye)"], Pantry: ["butter", "salt", "pepper"], Produce: ["garlic"] }
+  },
+  {
+    name: "Salmon",
+    starches: ["White rice"],
+    note: "Brush with soy sauce + a little honey. Bake 400°F for 12–14 min. Easy and fast.",
+    items: { Proteins: ["salmon fillets"], Pantry: ["soy sauce", "honey"], Produce: ["garlic"] }
+  },
+  {
+    name: "Ground beef bowl",
+    starches: ["White rice"],
+    note: "Brown beef with diced onion + garlic. Season with cumin, salt, chili powder. Serve over rice.",
+    items: { Proteins: ["ground beef (1 lb)"], Pantry: ["cumin", "chili powder"], Produce: ["onion", "garlic"] }
+  },
+  {
+    name: "Lomo Saltado",
+    starches: ["White rice"],
+    note: "Stir fry beef strips with onion, tomato, soy sauce, oyster sauce over high heat. Serve over rice.",
+    items: { Proteins: ["beef strips (1 lb)"], Pantry: ["soy sauce", "oyster sauce"], Produce: ["onion", "tomato", "garlic"] }
+  },
+  {
+    name: "Shrimp",
+    starches: ["White rice", "Pasta"],
+    note: "Sauté in butter + garlic 2–3 min per side until pink. Squeeze lemon. Done.",
+    items: { Proteins: ["shrimp (1 lb)"], Pantry: ["butter", "olive oil"], Produce: ["garlic", "lemon"] }
+  },
+  {
+    name: "Roasted chickpeas",
+    starches: ["White rice"],
+    note: "Drain chickpeas, toss with olive oil + cumin + paprika. Roast 400°F 25 min. Drizzle tahini.",
+    items: { Proteins: ["canned chickpeas (2 cans)"], Pantry: ["olive oil", "cumin", "paprika", "tahini"], Produce: [] }
+  },
+  {
+    name: "Pork chops",
+    starches: ["White rice", "Mashed potatoes", "Roasted potatoes"],
+    note: "Season, pan sear 4–5 min per side. Let rest before cutting.",
+    items: { Proteins: ["pork chops"], Pantry: ["garlic powder", "paprika", "olive oil"], Produce: [] }
+  },
+  {
+    name: "Meat sauce pasta",
+    starches: ["Pasta"],
+    note: "Brown ground beef + garlic, add marinara, simmer 20 min. Make a big batch — great leftovers.",
+    items: { Proteins: ["ground beef (1 lb)"], Pantry: ["jarred marinara", "pasta (1 box)"], Produce: ["garlic", "onion"] }
+  },
+  {
+    name: "Rotisserie chicken",
+    starches: ["White rice", "Roasted potatoes", "Mashed potatoes"],
+    note: "Just pick one up on the way home. Zero cooking. Pull the meat and serve.",
+    items: { Proteins: ["rotisserie chicken (store-bought)"], Pantry: [], Produce: [] }
+  },
+  {
+    name: "Chicken tacos",
+    starches: ["White rice"],
+    note: "Simmer chicken thighs with cumin + garlic broth 25 min, shred with two forks. Serve with tortillas.",
+    items: { Proteins: ["chicken thighs"], Pantry: ["cumin", "chili powder", "flour tortillas", "chicken broth"], Produce: ["garlic", "lime"] }
+  },
+  {
+    name: "Ground beef tacos",
+    starches: ["White rice"],
+    note: "Cook ground beef with taco seasoning. Serve in tortillas. Keep it simple.",
+    items: { Proteins: ["ground beef (1 lb)"], Pantry: ["taco seasoning", "flour tortillas", "jarred salsa"], Produce: ["lime"] }
+  },
+];
+
+const VEGGIES = [
+  { name: "Steamed broccoli",        items: { Produce: ["broccoli"] } },
+  { name: "Roasted asparagus",       items: { Produce: ["asparagus"], Pantry: ["olive oil"] } },
+  { name: "Sautéed green beans",     items: { Produce: ["green beans", "garlic"] } },
+  { name: "Roasted zucchini",        items: { Produce: ["zucchini"], Pantry: ["olive oil"] } },
+  { name: "Sautéed spinach",         items: { Produce: ["baby spinach", "garlic"] } },
+  { name: "Roasted bell peppers",    items: { Produce: ["bell peppers"], Pantry: ["olive oil"] } },
+  { name: "Steamed corn",            items: { Produce: ["frozen corn"] } },
+  { name: "Roasted carrots",         items: { Produce: ["carrots"], Pantry: ["olive oil", "honey"] } },
+  { name: "Roasted Brussels sprouts",items: { Produce: ["Brussels sprouts", "garlic"], Pantry: ["olive oil"] } },
+  { name: "Cucumber & tomato salad", items: { Produce: ["cucumber", "tomato", "lemon"], Pantry: ["olive oil"] } },
+  { name: "Roasted sweet potato",    items: { Produce: ["sweet potato"], Pantry: ["olive oil", "cinnamon"] } },
+];
+
+const STARCH_ITEMS = {
+  "White rice":       { Pantry: ["white rice"] },
+  "Pasta":            { Pantry: ["pasta (1 box)"] },
+  "Roasted potatoes": { Produce: ["potatoes"], Pantry: ["olive oil", "garlic powder"] },
+  "Mashed potatoes":  { Produce: ["potatoes"], Dairy: ["butter", "milk"] },
+};
+
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let plan = [];
+
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function makeMeal() {
+  const protein = rand(PROTEINS);
+  const starch  = rand(protein.starches);
+  const veggie  = rand(VEGGIES);
+  return { protein, starch, veggie };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────────────────
+function render() {
+  // Week label
+  const d = new Date();
+  document.getElementById('week-label').textContent =
+    'Week of ' + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  const container = document.getElementById('cards');
+  container.innerHTML = '';
+
+  plan.forEach((meal, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = `card-${i}`;
+    card.innerHTML = `
+      <div class="card-header">
+        <span class="day-name">${DAYS[i]}</span>
+        <button class="reroll-btn" onclick="rerollDay(${i})">🎲 Reroll</button>
+      </div>
+      <div class="meal-rows">
+        <div class="meal-row">
+          <span class="tag tag-p">Protein</span>
+          <span class="meal-name">${meal.protein.name}</span>
+        </div>
+        <div class="meal-row">
+          <span class="tag tag-s">Starch</span>
+          <span class="meal-name">${meal.starch}</span>
+        </div>
+        <div class="meal-row">
+          <span class="tag tag-v">Veggie</span>
+          <span class="meal-name">${meal.veggie.name}</span>
+        </div>
+      </div>
+      <div class="cook-note">${meal.protein.note}</div>
+    `;
+    container.appendChild(card);
+  });
+
+  save();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+function rerollAll() {
+  plan = DAYS.map(() => makeMeal());
+  render();
+  closeGrocery();
+}
+
+function rerollDay(i) {
+  plan[i] = makeMeal();
+  render();
+  // animate the card
+  setTimeout(() => {
+    const card = document.getElementById(`card-${i}`);
+    if (card) { card.classList.add('rolling'); setTimeout(() => card.classList.remove('rolling'), 300); }
+  }, 10);
+  if (document.getElementById('grocery-wrap').classList.contains('open')) {
+    buildGrocery();
+  }
+}
+
+function toggleGrocery() {
+  const wrap = document.getElementById('grocery-wrap');
+  if (wrap.classList.contains('open')) {
+    closeGrocery();
+  } else {
+    buildGrocery();
+    wrap.classList.add('open');
+    setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+}
+
+function closeGrocery() {
+  document.getElementById('grocery-wrap').classList.remove('open');
+}
+
+function buildGrocery() {
+  const lists = { Proteins: new Set(), Produce: new Set(), Pantry: new Set(), Dairy: new Set() };
+
+  plan.forEach(meal => {
+    // protein items
+    Object.entries(meal.protein.items).forEach(([cat, items]) => items.forEach(i => lists[cat]?.add(i)));
+    // starch items
+    const starchItems = STARCH_ITEMS[meal.starch] || {};
+    Object.entries(starchItems).forEach(([cat, items]) => items.forEach(i => lists[cat]?.add(i)));
+    // veggie items
+    Object.entries(meal.veggie.items).forEach(([cat, items]) => items.forEach(i => lists[cat]?.add(i)));
+  });
+
+  // shared pantry basics (always add)
+  lists.Pantry.add('olive oil');
+  lists.Pantry.add('salt');
+  lists.Pantry.add('pepper');
+
+  const body = document.getElementById('grocery-body');
+  body.innerHTML = '';
+
+  const catLabels = { Proteins: 'Proteins & Fish', Produce: 'Produce', Pantry: 'Pantry & Spices', Dairy: 'Dairy' };
+
+  for (const [cat, label] of Object.entries(catLabels)) {
+    const items = [...lists[cat]].filter(Boolean).sort();
+    if (!items.length) continue;
+
+    const div = document.createElement('div');
+    div.className = 'g-category';
+    div.innerHTML = `<h3>${label}</h3>`;
+
+    items.forEach(item => {
+      const row = document.createElement('label');
+      row.className = 'g-item';
+      row.innerHTML = `<input type="checkbox" onchange="this.closest('.g-item').classList.toggle('checked', this.checked)"><span>${item}</span>`;
+      div.appendChild(row);
+    });
+
+    body.appendChild(div);
+  }
+}
+
+function clearChecks() {
+  document.querySelectorAll('.g-item').forEach(el => {
+    el.classList.remove('checked');
+    el.querySelector('input').checked = false;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PERSISTENCE  (saves plan to localStorage so it survives page reloads)
+// ─────────────────────────────────────────────────────────────────────────────
+function save() {
+  const data = plan.map(m => ({
+    pName: m.protein.name,
+    starch: m.starch,
+    vName: m.veggie.name,
+  }));
+  localStorage.setItem('mealPlan', JSON.stringify({ date: new Date().toDateString(), data }));
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('mealPlan');
+    if (!raw) return false;
+    const { date, data } = JSON.parse(raw);
+    // Only restore if saved today
+    if (date !== new Date().toDateString()) return false;
+    plan = data.map(d => ({
+      protein: PROTEINS.find(p => p.name === d.pName) || rand(PROTEINS),
+      starch:  d.starch,
+      veggie:  VEGGIES.find(v => v.name === d.vName) || rand(VEGGIES),
+    }));
+    return true;
+  } catch { return false; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+if (!load()) { plan = DAYS.map(() => makeMeal()); }
+render();
+</script>
+</body>
+</html>
