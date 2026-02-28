@@ -162,15 +162,15 @@
     .fav-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
     .fav-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
-      padding: 8px 0;
+      padding: 10px 0;
       border-bottom: 1px solid var(--border);
     }
     .fav-item:last-child { border-bottom: none; }
     .fav-item-info { flex: 1; }
     .fav-item-protein { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
-    .fav-item-sides   { font-size: 0.78rem; color: var(--muted); }
+    .fav-item-sides   { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
     .fav-remove {
       background: none;
       border: none;
@@ -256,7 +256,7 @@
       cursor: pointer;
     }
     .btn:active { opacity: 0.8; }
-    .btn-outline      { background: var(--bg);  color: var(--green); border: 1.5px solid var(--green-mid); }
+    .btn-outline      { background: var(--bg);   color: var(--green); border: 1.5px solid var(--green-mid); }
     .btn-solid        { background: var(--green); color: white; }
     .btn-fav          { background: #fff1f2; color: #9f1239; border: 1.5px solid #fda4af; }
     .btn-danger       { background: var(--red-bg); color: var(--red-text); border: 1.5px solid #fca5a5; }
@@ -296,11 +296,11 @@
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-// PROTEINS  (American-style, real preparations)
+// PROTEINS
 // ─────────────────────────────────────────────────────────────────────────────
 const PROTEINS = [
 
-  // ── CHICKEN ──────────────────────────────────────────────────────────────
+  // ══ CHICKEN THIGHS ════════════════════════════════════════════════════════
   {
     name: "Garlic butter chicken thighs",
     sides: ["Brown rice", "Roasted potatoes", "Roasted sweet potato", "Quinoa"],
@@ -316,15 +316,47 @@ const PROTEINS = [
   {
     name: "BBQ baked chicken thighs",
     sides: ["Roasted potatoes", "Brown rice", "Roasted sweet potato"],
-    note: "Coat thighs in BBQ sauce, bake 400°F 35–40 min. Brush with more sauce last 5 min for sticky glaze.",
+    note: "Coat thighs in BBQ sauce, bake 400°F 35–40 min. Brush with more sauce last 5 min for a sticky glaze.",
     items: { Proteins: ["chicken thighs"], Pantry: ["BBQ sauce"] }
   },
   {
     name: "Paprika roasted chicken thighs",
     sides: ["Brown rice", "Roasted potatoes", "Roasted sweet potato"],
-    note: "Mix smoked paprika, garlic powder, cumin, salt + olive oil. Coat thighs. Roast 425°F 35 min. Crispy skin, great flavor.",
+    note: "Mix smoked paprika, garlic powder, cumin, salt + olive oil. Coat thighs. Roast 425°F 35 min. Crispy skin.",
     items: { Proteins: ["chicken thighs"], Pantry: ["smoked paprika", "cumin", "garlic powder"] }
   },
+  {
+    name: "Ranch baked chicken thighs",
+    sides: ["Roasted potatoes", "Brown rice", "Mashed potatoes"],
+    note: "Coat thighs with ranch seasoning packet + olive oil. Bake 400°F 35 min. Super easy, great flavor.",
+    items: { Proteins: ["chicken thighs"], Pantry: ["ranch seasoning packet", "olive oil"] }
+  },
+  {
+    name: "Teriyaki chicken thighs",
+    sides: ["White rice", "Brown rice"],
+    note: "Marinate thighs in soy sauce, mirin, honey, garlic 30 min. Pan sear 5 min/side, simmer in sauce until thick and glossy.",
+    items: { Proteins: ["chicken thighs"], Pantry: ["soy sauce", "honey", "mirin"], Produce: ["garlic", "ginger"] }
+  },
+  {
+    name: "Sriracha honey chicken thighs",
+    sides: ["Brown rice", "White rice", "Quinoa"],
+    note: "Mix 2 tbsp sriracha + 2 tbsp honey + soy sauce + garlic. Coat thighs. Bake 400°F 30 min. Sweet heat.",
+    items: { Proteins: ["chicken thighs"], Pantry: ["sriracha", "honey", "soy sauce"], Produce: ["garlic"] }
+  },
+  {
+    name: "Balsamic glazed chicken thighs",
+    sides: ["Brown rice", "Roasted potatoes", "Quinoa"],
+    note: "Mix balsamic vinegar + honey + garlic + Dijon. Sear thighs 5 min/side, pour sauce over, finish in oven 15 min at 400°F.",
+    items: { Proteins: ["chicken thighs"], Pantry: ["balsamic vinegar", "honey", "Dijon mustard"], Produce: ["garlic"] }
+  },
+  {
+    name: "Chipotle lime chicken thighs",
+    sides: ["Brown rice", "White rice", "Roasted sweet potato"],
+    note: "Mix chipotle powder, garlic powder, cumin, lime juice + olive oil. Coat thighs, marinate 20 min. Bake 425°F 30–35 min.",
+    items: { Proteins: ["chicken thighs"], Pantry: ["chipotle powder", "cumin", "olive oil"], Produce: ["lime", "garlic"] }
+  },
+
+  // ══ CHICKEN BREAST ════════════════════════════════════════════════════════
   {
     name: "Crispy baked chicken tenders",
     sides: ["Roasted potatoes", "Brown rice", "Roasted sweet potato"],
@@ -356,13 +388,49 @@ const PROTEINS = [
     items: { Proteins: ["chicken breast"], Pantry: ["olive oil", "garlic powder"] }
   },
   {
+    name: "Buffalo baked chicken breast",
+    sides: ["Brown rice", "Roasted potatoes", "Quinoa"],
+    note: "Bake plain chicken at 400°F 20 min. Toss in buffalo sauce (hot sauce + butter). Great with celery + blue cheese on the side.",
+    items: { Proteins: ["chicken breast"], Pantry: ["hot sauce", "butter"] }
+  },
+  {
+    name: "Parmesan crusted chicken breast",
+    sides: ["Roasted potatoes", "Brown rice", "Pasta"],
+    note: "Press chicken into a mix of parmesan + breadcrumbs + Italian seasoning. Pan sear in olive oil 4 min/side, then oven 400°F 10 min.",
+    items: { Proteins: ["chicken breast"], Pantry: ["parmesan", "breadcrumbs", "Italian seasoning", "olive oil"] }
+  },
+  {
+    name: "Blackened chicken breast",
+    sides: ["Brown rice", "Quinoa", "Roasted potatoes"],
+    note: "Coat in blackening spice (paprika, cayenne, garlic powder, thyme, cumin). Cast iron on high heat, 4–5 min/side. Bold and smoky.",
+    items: { Proteins: ["chicken breast"], Pantry: ["paprika", "cayenne", "garlic powder", "cumin", "dried thyme"] }
+  },
+  {
+    name: "Pesto baked chicken breast",
+    sides: ["Pasta", "Brown rice", "Quinoa", "Roasted potatoes"],
+    note: "Coat chicken breast in jarred pesto. Bake 400°F 22–25 min. Top with mozzarella last 3 min if you want it melty.",
+    items: { Proteins: ["chicken breast"], Pantry: ["jarred pesto"] }
+  },
+  {
+    name: "Italian dressing chicken breast",
+    sides: ["Brown rice", "Roasted potatoes", "Quinoa"],
+    note: "Marinate chicken in Italian dressing for 30 min (or overnight). Bake 400°F 22 min or grill. Extremely easy.",
+    items: { Proteins: ["chicken breast"], Pantry: ["Italian dressing"] }
+  },
+  {
+    name: "Coconut lime chicken breast",
+    sides: ["Brown rice", "White rice", "Quinoa"],
+    note: "Marinate in coconut milk + lime juice + garlic + ginger 30 min. Bake 400°F 22 min or pan sear. Light and tropical.",
+    items: { Proteins: ["chicken breast"], Pantry: ["coconut milk"], Produce: ["lime", "garlic", "ginger"] }
+  },
+  {
     name: "Rotisserie chicken",
     sides: ["Roasted potatoes", "Brown rice", "Quinoa", "Fresh fruit"],
-    note: "Grab one from the store on the way home. Pull the meat off and serve. Zero prep, zero cleanup.",
+    note: "Grab one at the store on the way home. Pull the meat off and serve. Zero prep, zero cleanup.",
     items: { Proteins: ["rotisserie chicken (store-bought)"] }
   },
 
-  // ── STEAK / BEEF ─────────────────────────────────────────────────────────
+  // ══ STEAK & BEEF ══════════════════════════════════════════════════════════
   {
     name: "Garlic butter sirloin steak",
     sides: ["Roasted potatoes", "Mashed potatoes", "Roasted sweet potato"],
@@ -376,10 +444,16 @@ const PROTEINS = [
     items: { Proteins: ["ribeye steak"], Pantry: ["butter"] }
   },
   {
+    name: "Carne asada flank steak",
+    sides: ["Brown rice", "White rice", "Roasted potatoes"],
+    note: "Marinate flank steak in lime juice, garlic, cumin, cilantro + orange juice for 2–4 hrs. Grill or cast iron 3–4 min/side. Slice thin against the grain.",
+    items: { Proteins: ["flank steak"], Pantry: ["cumin", "olive oil"], Produce: ["lime", "orange", "garlic", "cilantro"] }
+  },
+  {
     name: "Korean-style ground beef bowl",
     sides: ["Brown rice", "White rice"],
     note: "Brown beef, drain. Add soy sauce, garlic, ginger, honey, sesame oil. Done in 15 min. Top with sesame seeds + green onion.",
-    items: { Proteins: ["lean ground beef (1 lb)"], Pantry: ["soy sauce", "sesame oil", "honey"], Produce: ["garlic", "green onion"] }
+    items: { Proteins: ["lean ground beef (1 lb)"], Pantry: ["soy sauce", "sesame oil", "honey"], Produce: ["garlic", "ginger", "green onion"] }
   },
   {
     name: "Ground beef taco bowl",
@@ -387,8 +461,26 @@ const PROTEINS = [
     note: "Brown lean beef with taco seasoning + onion. Serve over rice with avocado, salsa, lime squeeze.",
     items: { Proteins: ["lean ground beef (1 lb)"], Pantry: ["taco seasoning", "jarred salsa"], Produce: ["onion", "avocado", "lime"] }
   },
+  {
+    name: "Beef and broccoli",
+    sides: ["Brown rice", "White rice"],
+    note: "Slice beef thin, stir fry on high heat 2 min. Remove. Add broccoli + sauce (soy, oyster sauce, garlic, ginger, cornstarch). Combine.",
+    items: { Proteins: ["sirloin or flank steak"], Pantry: ["soy sauce", "oyster sauce", "cornstarch", "sesame oil"], Produce: ["garlic", "ginger"] }
+  },
+  {
+    name: "Classic beef meatballs",
+    sides: ["Whole wheat pasta", "Brown rice", "Mashed potatoes"],
+    note: "Mix ground beef with breadcrumbs, egg, parmesan, garlic, Italian seasoning. Form balls, bake 400°F 20 min. Top with marinara.",
+    items: { Proteins: ["ground beef (1 lb)"], Pantry: ["breadcrumbs", "Italian seasoning", "jarred marinara", "parmesan"], Dairy: ["eggs"] }
+  },
+  {
+    name: "Smash burger patties",
+    sides: ["Roasted potatoes", "Baked potato"],
+    note: "Form loose 2 oz balls, smash flat on a screaming hot cast iron with a spatula. 2 min/side. Salt + pepper only. Simple perfection.",
+    items: { Proteins: ["80/20 ground beef (1 lb)"], Pantry: ["American cheese slices"] }
+  },
 
-  // ── SALMON & FISH ─────────────────────────────────────────────────────────
+  // ══ SALMON & FISH ═════════════════════════════════════════════════════════
   {
     name: "Honey soy glazed salmon",
     sides: ["Brown rice", "White rice", "Quinoa"],
@@ -408,13 +500,43 @@ const PROTEINS = [
     items: { Proteins: ["salmon fillets"], Pantry: ["Cajun seasoning", "olive oil"] }
   },
   {
+    name: "Teriyaki salmon",
+    sides: ["Brown rice", "White rice", "Quinoa"],
+    note: "Mix soy sauce, honey, garlic, ginger + a splash of rice vinegar. Pour over salmon. Bake 400°F 12–14 min, baste once.",
+    items: { Proteins: ["salmon fillets"], Pantry: ["soy sauce", "honey", "rice vinegar"], Produce: ["garlic", "ginger"] }
+  },
+  {
+    name: "Everything bagel salmon",
+    sides: ["Brown rice", "Quinoa", "Roasted sweet potato"],
+    note: "Brush salmon with olive oil or cream cheese, press on everything bagel seasoning. Bake 400°F 12–15 min. Flavor-packed.",
+    items: { Proteins: ["salmon fillets"], Pantry: ["everything bagel seasoning", "olive oil"] }
+  },
+  {
+    name: "Maple dijon salmon",
+    sides: ["Brown rice", "Roasted sweet potato", "Quinoa"],
+    note: "Mix 2 tbsp maple syrup + 1 tbsp Dijon + garlic. Coat salmon. Bake 400°F 12–14 min. Sweet, tangy, great.",
+    items: { Proteins: ["salmon fillets"], Pantry: ["maple syrup", "Dijon mustard"], Produce: ["garlic"] }
+  },
+  {
     name: "Garlic butter tilapia",
     sides: ["Brown rice", "Quinoa"],
     note: "Season with garlic powder, paprika, salt. Pan sear in butter + garlic 3–4 min/side. Squeeze lemon on top.",
     items: { Proteins: ["tilapia fillets"], Pantry: ["butter", "garlic powder", "paprika"], Produce: ["lemon"] }
   },
+  {
+    name: "Blackened tilapia",
+    sides: ["Brown rice", "Quinoa", "Roasted potatoes"],
+    note: "Coat in blackening spice, sear in butter on high heat 3–4 min/side. Cheap, fast, and full of flavor.",
+    items: { Proteins: ["tilapia fillets"], Pantry: ["Cajun seasoning", "paprika", "cayenne", "butter"] }
+  },
+  {
+    name: "Garlic herb baked cod",
+    sides: ["Brown rice", "Quinoa", "Roasted potatoes"],
+    note: "Season cod with garlic, lemon, parsley, olive oil, salt + pepper. Bake 400°F 12–14 min. Very light and clean.",
+    items: { Proteins: ["cod fillets"], Pantry: ["olive oil", "dried parsley"], Produce: ["lemon", "garlic"] }
+  },
 
-  // ── SHRIMP ────────────────────────────────────────────────────────────────
+  // ══ SHRIMP ════════════════════════════════════════════════════════════════
   {
     name: "Garlic butter shrimp",
     sides: ["Brown rice", "Pasta", "Quinoa"],
@@ -433,8 +555,20 @@ const PROTEINS = [
     note: "Toss shrimp in lemon pepper seasoning + melted butter. Cook in skillet 2–3 min/side. Bright and clean.",
     items: { Proteins: ["shrimp (1 lb, peeled)"], Pantry: ["lemon pepper seasoning", "butter"] }
   },
+  {
+    name: "Honey sriracha shrimp",
+    sides: ["Brown rice", "White rice"],
+    note: "Toss shrimp in honey + sriracha + soy sauce + garlic. Sauté on high 2 min/side. Sweet heat that goes great over rice.",
+    items: { Proteins: ["shrimp (1 lb, peeled)"], Pantry: ["honey", "sriracha", "soy sauce"], Produce: ["garlic"] }
+  },
+  {
+    name: "Teriyaki shrimp bowl",
+    sides: ["Brown rice", "White rice"],
+    note: "Cook shrimp 2 min/side in a pan. Add store-bought teriyaki sauce, toss to coat. Serve over rice with sesame seeds.",
+    items: { Proteins: ["shrimp (1 lb, peeled)"], Pantry: ["teriyaki sauce", "sesame seeds"] }
+  },
 
-  // ── PORK ─────────────────────────────────────────────────────────────────
+  // ══ PORK ══════════════════════════════════════════════════════════════════
   {
     name: "Pan-seared pork chops",
     sides: ["Roasted potatoes", "Mashed potatoes", "Brown rice", "Roasted sweet potato"],
@@ -447,8 +581,26 @@ const PROTEINS = [
     note: "Mix 2 tbsp Dijon + 2 tbsp honey + minced garlic. Coat tenderloin. Roast 400°F 20–25 min until 145°F inside. Slice thin.",
     items: { Proteins: ["pork tenderloin"], Pantry: ["Dijon mustard", "honey"], Produce: ["garlic"] }
   },
+  {
+    name: "BBQ pork tenderloin",
+    sides: ["Roasted potatoes", "Brown rice", "Roasted sweet potato", "Baked potato"],
+    note: "Season with garlic powder, smoked paprika, salt. Sear all sides in cast iron, brush with BBQ sauce, roast 400°F 20 min.",
+    items: { Proteins: ["pork tenderloin"], Pantry: ["BBQ sauce", "smoked paprika", "garlic powder"] }
+  },
+  {
+    name: "Apple cider pork chops",
+    sides: ["Roasted potatoes", "Mashed potatoes", "Roasted sweet potato"],
+    note: "Sear chops 4 min/side. Remove. Add apple cider + Dijon + garlic to pan, reduce, pour over chops. Great fall flavor.",
+    items: { Proteins: ["pork chops"], Pantry: ["apple cider vinegar", "Dijon mustard", "butter"], Produce: ["garlic"] }
+  },
+  {
+    name: "Garlic herb pork chops",
+    sides: ["Roasted potatoes", "Brown rice", "Quinoa"],
+    note: "Season with Italian seasoning, garlic powder, salt, pepper. Pan sear in olive oil 4–5 min/side. Finish with butter + fresh garlic.",
+    items: { Proteins: ["pork chops"], Pantry: ["Italian seasoning", "garlic powder", "butter", "olive oil"] }
+  },
 
-  // ── TURKEY ────────────────────────────────────────────────────────────────
+  // ══ TURKEY ════════════════════════════════════════════════════════════════
   {
     name: "Ground turkey taco bowl",
     sides: ["Brown rice", "White rice"],
@@ -461,41 +613,66 @@ const PROTEINS = [
     note: "Mix turkey with breadcrumbs, egg, parmesan, Italian seasoning, garlic. Form balls, bake 400°F 20 min. Serve with marinara.",
     items: { Proteins: ["ground turkey (1 lb)"], Pantry: ["breadcrumbs", "Italian seasoning", "jarred marinara", "parmesan"], Dairy: ["eggs"] }
   },
+  {
+    name: "Turkey burger patties",
+    sides: ["Roasted potatoes", "Baked potato", "Brown rice"],
+    note: "Mix turkey with garlic powder, onion powder, Worcestershire sauce, salt + pepper. Form patties, cook 5–6 min/side on medium-high.",
+    items: { Proteins: ["ground turkey (1 lb)"], Pantry: ["garlic powder", "onion powder", "Worcestershire sauce"] }
+  },
+  {
+    name: "Lean turkey stir fry",
+    sides: ["Brown rice", "White rice"],
+    note: "Brown turkey in sesame oil + garlic + ginger. Add your veggies, soy sauce, a little honey, sriracha. Quick and clean.",
+    items: { Proteins: ["ground turkey (1 lb)"], Pantry: ["soy sauce", "sesame oil", "honey", "sriracha"], Produce: ["garlic", "ginger"] }
+  },
+  {
+    name: "Honey garlic turkey breast",
+    sides: ["Brown rice", "Roasted sweet potato", "Roasted potatoes"],
+    note: "Slice turkey breast thin. Sauté in butter + honey + garlic until golden and coated. Light and quick.",
+    items: { Proteins: ["turkey breast cutlets"], Pantry: ["butter", "honey"], Produce: ["garlic"] }
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VEGGIES
 // ─────────────────────────────────────────────────────────────────────────────
 const VEGGIES = [
-  { name: "Steamed broccoli",         items: { Produce: ["broccoli"] } },
-  { name: "Roasted asparagus",        items: { Produce: ["asparagus"], Pantry: ["olive oil"] } },
-  { name: "Sautéed green beans",      items: { Produce: ["green beans", "garlic"] } },
-  { name: "Roasted zucchini",         items: { Produce: ["zucchini"], Pantry: ["olive oil"] } },
-  { name: "Sautéed spinach",          items: { Produce: ["baby spinach", "garlic"] } },
-  { name: "Roasted bell peppers",     items: { Produce: ["bell peppers"], Pantry: ["olive oil"] } },
-  { name: "Steamed corn",             items: { Produce: ["corn on the cob"] } },
-  { name: "Roasted carrots",          items: { Produce: ["carrots"], Pantry: ["olive oil", "honey"] } },
-  { name: "Roasted Brussels sprouts", items: { Produce: ["Brussels sprouts"], Pantry: ["olive oil"] } },
-  { name: "Cucumber & tomato salad",  items: { Produce: ["cucumber", "cherry tomatoes", "lemon"] } },
-  { name: "Mixed greens salad",       items: { Produce: ["mixed greens", "cherry tomatoes", "cucumber"] } },
-  { name: "Sliced avocado",           items: { Produce: ["avocado"] } },
-  { name: "Roasted broccoli",         items: { Produce: ["broccoli"], Pantry: ["olive oil", "garlic powder"] } },
-  { name: "Sautéed mushrooms",        items: { Produce: ["mushrooms", "garlic"], Pantry: ["butter"] } },
+  { name: "Steamed broccoli",          items: { Produce: ["broccoli"] } },
+  { name: "Roasted broccoli",          items: { Produce: ["broccoli"], Pantry: ["olive oil", "garlic powder"] } },
+  { name: "Roasted asparagus",         items: { Produce: ["asparagus"], Pantry: ["olive oil"] } },
+  { name: "Sautéed green beans",       items: { Produce: ["green beans", "garlic"] } },
+  { name: "Roasted zucchini",          items: { Produce: ["zucchini"], Pantry: ["olive oil"] } },
+  { name: "Sautéed spinach",           items: { Produce: ["baby spinach", "garlic"] } },
+  { name: "Roasted bell peppers",      items: { Produce: ["bell peppers"], Pantry: ["olive oil"] } },
+  { name: "Steamed corn",              items: { Produce: ["corn on the cob"] } },
+  { name: "Roasted carrots",           items: { Produce: ["carrots"], Pantry: ["olive oil", "honey"] } },
+  { name: "Roasted Brussels sprouts",  items: { Produce: ["Brussels sprouts"], Pantry: ["olive oil"] } },
+  { name: "Roasted cauliflower",       items: { Produce: ["cauliflower"], Pantry: ["olive oil", "garlic powder"] } },
+  { name: "Cucumber & tomato salad",   items: { Produce: ["cucumber", "cherry tomatoes", "lemon"] } },
+  { name: "Mixed greens salad",        items: { Produce: ["mixed greens", "cherry tomatoes", "cucumber"] } },
+  { name: "Sliced avocado",            items: { Produce: ["avocado"] } },
+  { name: "Sautéed mushrooms",         items: { Produce: ["mushrooms", "garlic"], Pantry: ["butter"] } },
+  { name: "Roasted snap peas",         items: { Produce: ["snap peas"], Pantry: ["olive oil", "garlic powder"] } },
+  { name: "Steamed edamame",           items: { Produce: ["frozen edamame"] } },
+  { name: "Sautéed kale",             items: { Produce: ["kale", "garlic"], Pantry: ["olive oil"] } },
+  { name: "Greek cucumber salad",      items: { Produce: ["cucumber", "cherry tomatoes", "red onion", "lemon"], Pantry: ["olive oil", "dried oregano"] } },
+  { name: "Coleslaw",                  items: { Produce: ["coleslaw mix"], Pantry: ["mayo", "apple cider vinegar"] } },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SIDES  (healthy carbs + fruit options)
+// SIDES
 // ─────────────────────────────────────────────────────────────────────────────
 const SIDE_ITEMS = {
   "White rice":          { Pantry: ["white rice"] },
   "Brown rice":          { Pantry: ["brown rice"] },
   "Quinoa":              { Pantry: ["quinoa"] },
   "Whole wheat pasta":   { Pantry: ["whole wheat pasta"] },
+  "Pasta":               { Pantry: ["pasta"] },
   "Roasted potatoes":    { Produce: ["potatoes"],    Pantry: ["olive oil", "garlic powder"] },
   "Mashed potatoes":     { Produce: ["potatoes"],    Dairy: ["butter", "milk"] },
+  "Baked potato":        { Produce: ["russet potatoes"] },
   "Roasted sweet potato":{ Produce: ["sweet potato"],Pantry: ["olive oil"] },
   "Fresh fruit":         { Produce: ["fresh fruit (berries, mango, or melon)"] },
-  "Pasta":               { Pantry: ["pasta"] },
 };
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -504,56 +681,44 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 // STATE
 // ─────────────────────────────────────────────────────────────────────────────
 let plan = [];
-let FAVORITES = []; // array of { protein, side, veggie } — whole meal
+let FAVORITES = [];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
 function makeMeal() {
   const protein = rand(PROTEINS);
   return { protein, side: rand(protein.sides), veggie: rand(VEGGIES) };
 }
-
 function mealKey(m) { return `${m.protein.name}|${m.side}|${m.veggie.name}`; }
 function isMealFav(m) { return FAVORITES.some(f => mealKey(f) === mealKey(m)); }
+function ytUrl(name) { return `https://www.youtube.com/results?search_query=${encodeURIComponent(name + ' recipe')}`; }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FAVORITES PERSISTENCE
+// FAVORITES
 // ─────────────────────────────────────────────────────────────────────────────
 function loadFavorites() {
-  try {
-    const raw = localStorage.getItem('favMeals');
-    if (raw) FAVORITES = JSON.parse(raw);
-  } catch (_) {}
+  try { const r = localStorage.getItem('favMeals'); if (r) FAVORITES = JSON.parse(r); } catch (_) {}
 }
-
 function saveFavorites() {
   localStorage.setItem('favMeals', JSON.stringify(FAVORITES));
 }
-
 function toggleFavorite(i) {
   const meal = plan[i];
   const key  = mealKey(meal);
   const idx  = FAVORITES.findIndex(f => mealKey(f) === key);
-  if (idx >= 0) {
-    FAVORITES.splice(idx, 1);
-  } else {
-    FAVORITES.push({ protein: meal.protein, side: meal.side, veggie: meal.veggie });
-  }
+  if (idx >= 0) { FAVORITES.splice(idx, 1); } else { FAVORITES.push({ protein: meal.protein, side: meal.side, veggie: meal.veggie }); }
   saveFavorites();
   render();
   if (document.getElementById('fav-section').classList.contains('open')) buildFavSection();
 }
-
 function removeFav(idx) {
   FAVORITES.splice(idx, 1);
   saveFavorites();
   buildFavSection();
   render();
 }
-
 function clearAllFavs() {
   FAVORITES = [];
   saveFavorites();
@@ -574,8 +739,6 @@ function render() {
 
   plan.forEach((meal, i) => {
     const fav = isMealFav(meal);
-    const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(meal.protein.name + ' recipe')}`;
-
     const card = document.createElement('div');
     card.className = 'card';
     card.id = `card-${i}`;
@@ -603,7 +766,7 @@ function render() {
       </div>
       <div class="cook-note">
         ${meal.protein.note}
-        <br><a href="${ytUrl}" target="_blank" class="yt-link">▶ YouTube tutorial</a>
+        <br><a href="${ytUrl(meal.protein.name)}" target="_blank" class="yt-link">▶ YouTube tutorial</a>
       </div>
     `;
     container.appendChild(card);
@@ -625,12 +788,7 @@ function askRerollAll() {
   `;
   rerollTimer = setTimeout(cancelRerollAll, 4000);
 }
-
-function cancelRerollAll() {
-  clearTimeout(rerollTimer);
-  restoreBottomBar();
-}
-
+function cancelRerollAll() { clearTimeout(rerollTimer); restoreBottomBar(); }
 function doRerollAll() {
   clearTimeout(rerollTimer);
   restoreBottomBar();
@@ -638,7 +796,6 @@ function doRerollAll() {
   render();
   closeGrocery();
 }
-
 function restoreBottomBar() {
   document.getElementById('bottom-bar').innerHTML = `
     <button class="btn btn-outline" onclick="askRerollAll()">🎲 Reroll All</button>
@@ -646,7 +803,6 @@ function restoreBottomBar() {
     <button class="btn btn-solid"   onclick="toggleGrocery()">🛒 List</button>
   `;
 }
-
 function rerollDay(i) {
   plan[i] = makeMeal();
   render();
@@ -659,13 +815,8 @@ function rerollDay(i) {
 
 function toggleFavSection() {
   const el = document.getElementById('fav-section');
-  if (el.classList.contains('open')) {
-    el.classList.remove('open');
-  } else {
-    buildFavSection();
-    el.classList.add('open');
-    setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-  }
+  if (el.classList.contains('open')) { el.classList.remove('open'); }
+  else { buildFavSection(); el.classList.add('open'); setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }
 }
 
 function buildFavSection() {
@@ -682,8 +833,9 @@ function buildFavSection() {
       <div class="fav-item-info">
         <div class="fav-item-protein">${fav.protein.name}</div>
         <div class="fav-item-sides">${fav.side} · ${fav.veggie.name}</div>
+        <a href="${ytUrl(fav.protein.name)}" target="_blank" class="yt-link">▶ YouTube tutorial</a>
       </div>
-      <button class="fav-remove" onclick="removeFav(${idx})" title="Remove">✕</button>
+      <button class="fav-remove" onclick="removeFav(${idx})">✕</button>
     `;
     body.appendChild(row);
   });
@@ -691,35 +843,22 @@ function buildFavSection() {
 
 function toggleGrocery() {
   const wrap = document.getElementById('grocery-wrap');
-  if (wrap.classList.contains('open')) {
-    closeGrocery();
-  } else {
-    buildGrocery();
-    wrap.classList.add('open');
-    setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-  }
+  if (wrap.classList.contains('open')) { closeGrocery(); }
+  else { buildGrocery(); wrap.classList.add('open'); setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }
 }
-
-function closeGrocery() {
-  document.getElementById('grocery-wrap').classList.remove('open');
-}
+function closeGrocery() { document.getElementById('grocery-wrap').classList.remove('open'); }
 
 function buildGrocery() {
   const lists = { Proteins: new Set(), Produce: new Set(), Pantry: new Set(), Dairy: new Set() };
-
   plan.forEach(meal => {
     Object.entries(meal.protein.items || {}).forEach(([cat, items]) => (items || []).forEach(i => lists[cat]?.add(i)));
     Object.entries(SIDE_ITEMS[meal.side] || {}).forEach(([cat, items]) => items.forEach(i => lists[cat]?.add(i)));
     Object.entries(meal.veggie.items || {}).forEach(([cat, items]) => (items || []).forEach(i => lists[cat]?.add(i)));
   });
-
-  lists.Pantry.add('olive oil');
-  lists.Pantry.add('salt');
-  lists.Pantry.add('pepper');
+  lists.Pantry.add('olive oil'); lists.Pantry.add('salt'); lists.Pantry.add('pepper');
 
   const body = document.getElementById('grocery-body');
   body.innerHTML = '';
-
   const catLabels = { Proteins: 'Proteins & Fish', Produce: 'Produce', Pantry: 'Pantry & Spices', Dairy: 'Dairy' };
   for (const [cat, label] of Object.entries(catLabels)) {
     const items = [...lists[cat]].filter(Boolean).sort();
@@ -755,7 +894,6 @@ function save() {
   }));
   localStorage.setItem('mealPlan', JSON.stringify({ date: new Date().toDateString(), data }));
 }
-
 function load() {
   try {
     const raw = localStorage.getItem('mealPlan');
